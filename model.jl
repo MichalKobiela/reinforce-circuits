@@ -132,3 +132,23 @@ function loss_auto(p, desired_oscillations_num = 5)
     sol = solve(prob, EM(), dt = 0.1, p = [d,d,d,h,h,h,1000*p[3],10*p[4]])[2,1000:2000]
     return (freq(autocorrelation(sol)) - 1/desired_oscillations_num).^2
 end
+
+function loss_auto_partially_obs(p,q, desired_oscillations_num = 5)
+
+    d1 = 2*p[1]
+    d2 = 2*p[2]
+    d3 = 2*p[3]
+    h1 = 3*p[1]+2
+    h2 = 3*p[2]+2
+    h3 = 3*p[3]+2
+    sol = solve(prob, EM(), dt = 0.1, p = [d1,d2,d3,h1,h2,h3,1000*q[1],10*q[2]])[2,1000:2000]
+    return (freq(autocorrelation(sol)) - 1/desired_oscillations_num).^2
+end
+
+function solution_partially_obs(p,q)
+    d = 2*q[3]
+    h1 = 2*p[1]+1
+    h2 = 2*p[2]+1
+    h3 = 2*p[3]+1
+    return solve(prob, EM(), dt = 0.1, p = [d,d,d,h1,h2,h3,1000*q[1],100*q[2]])[2,1000:2000]
+end
