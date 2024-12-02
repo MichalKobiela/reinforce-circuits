@@ -6,14 +6,14 @@ using DifferentialEquations
 
 # Define variables (time-dependent now)
 @variables t m₁(t) m₂(t) m₃(t) p₁(t) p₂(t) p₃(t)
-@parameters α β δ γ K n
+@parameters α_1 α_2 α_3 β δ γ_1 γ_2 γ_3 K_1 K_2 K_3 n_1 n_2 n_3
 
 # Reactions for the repressilator
 rxs = @reaction_network begin
     # Repression modeled with Hill functions
-    (α / (1 + abs(p₃ / K)^n)), ∅ → m₁  # Repression of m₁ by p₃
-    (α / (1 + abs(p₁ / K)^n)), ∅ → m₂  # Repression of m₂ by p₁
-    (α / (1 + abs(p₂ / K)^n)), ∅ → m₃  # Repression of m₃ by p₂
+    (α_1 / (1 + abs(p₃ / K_1)^n_1)), ∅ → m₁  # Repression of m₁ by p₃
+    (α_2 / (1 + abs(p₁ / K_2)^n_2)), ∅ → m₂  # Repression of m₂ by p₁
+    (α_3 / (1 + abs(p₂ / K_3)^n_3)), ∅ → m₃  # Repression of m₃ by p₂
 
     # Translation
     β, m₁ → p₁
@@ -24,9 +24,9 @@ rxs = @reaction_network begin
     δ, m₁ → ∅
     δ, m₂ → ∅
     δ, m₃ → ∅
-    γ, p₁ → ∅
-    γ, p₂ → ∅
-    γ, p₃ → ∅
+    γ_1, p₁ → ∅
+    γ_2, p₂ → ∅
+    γ_3, p₃ → ∅
 end
 
 # Initial conditions
@@ -41,10 +41,14 @@ tspan = (0.0, 125.0)
 param_values = ones(6) .+ 0.5
 
 params = [
-    α => param_values[1]*1000,      # Maximal transcription rate
+    α_1 => param_values[1]*1000,      # Maximal transcription rate
+    α_2 => param_values[2]*1000,      # Maximal transcription rate
+    α_3 => param_values[3]*1000,      # Maximal transcription rate
     β => param_values[2]*10,       # Translation rate
     δ => param_values[3],       # mRNA degradation rate
-    γ => param_values[4],     # Protein degradation rate
+    γ_1 => param_values[4],     # Protein degradation rate
+    γ_2 => param_values[4],     # Protein degradation rate
+    γ_3 => param_values[4],     # Protein degradation rate
     K => param_values[5]*100,       # Repression threshold
     n => param_values[6]*2+2       # Hill coefficient
 ]
@@ -93,8 +97,6 @@ end
 # Reward = - loss_auto
 # Loss based on autocorrelation
 function loss_auto(p, desired_oscillations_num = 5)
-    d = 2*p[1]
-    h = 3*p[2]+2
     sol = solution(p)
     return (freq(autocorrelation(sol)) - 1/desired_oscillations_num).^2
 end

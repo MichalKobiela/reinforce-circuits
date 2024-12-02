@@ -5,7 +5,7 @@ using ProgressBars
 using Flux 
 include("model_mjp.jl")
 
-desired_oscillations_num = 8
+desired_oscillations_num = 7
 
 truncNorm(μ, b) = Truncated(Normal(μ, b), 0, 1)
 
@@ -42,23 +42,31 @@ end
 
 result = [0.5,0.5,0.5,0.5,0.5,0.5] 
 
+loss_auto_peak(result)
+
 opt_state = Flux.setup(Descent(0.01), result)
 
-loss_vec = zeros(1000)
+loss_vec = zeros(5000)
 
 #Reinforce
-for i in tqdm(1:1000)
+for i in tqdm(1:5000)
     xs = sample_policy(result)
-    loss_vec[i] = loss_auto(xs,desired_oscillations_num)
+    loss_vec[i] = loss_auto(xs, 7)
     print(loss_vec[i])
     ∇μ= Flux.gradient(μ -> score(xs, μ), result)[1]
     Flux.update!(opt_state, result, ∇μ .* loss_vec[i])
 end
 
-plot(loss_vec[1:100]) # plot progress
 
-plot(solution(result)) # plot solution
+
+plot(loss_vec, xlabel = "iteration", ylabel = "objective function", legend = false) # plot progress
+
+plot(solution([0.9,0.1,0.1,0.3,0.4,0.4]))
+
+plot(solution(result), xlabel = "time", ylabel = "expression", title = "7 oscilations desired", legend = false) # plot solution
 
 xs = sample_policy(result)
 
 plot(solution(xs)) 
+
+result .* [1000, 10, 1, 1, 10, 2] + [0, 0, 0, 0, 0, 2]

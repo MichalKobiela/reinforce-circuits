@@ -13,7 +13,7 @@ response_length = 1
 
 function loss_auto_paritally_obs(p,q, desired_oscillations_num = 5)
     sol = solution(vcat(p[1],q[1],q[2],q[3],p[2],q[4]))
-    return (freq(autocorrelation(sol)) - 1/desired_oscillations_num).^2,freq(autocorrelation(sol))- 1/desired_oscillations_num
+    return (freq(autocorrelation(sol)) - 1/desired_oscillations_num).^2, freq(autocorrelation(sol))- 1/desired_oscillations_num
 end
 
 
@@ -58,8 +58,8 @@ end
 opt_state = Flux.setup(Descent(0.01), model)
 
 #Reinforce
-loss_vec = zeros(100000)
-for i in tqdm(1:100000)
+loss_vec = zeros(10000)
+for i in tqdm(1:10000)
     unobserved_state = rand(4).*0.3 .+ 0.5
     state = zeros(num_design_params + response_length)
     for j in 1:history_length
@@ -83,7 +83,7 @@ state = zeros(num_design_params + response_length)
 result = [0.6,0.25] #model(state)
 
 q = rand(4).*0.3 .+ 0.5
-q[3] = 0.8
+q[3] = 0.7
 plot(solution(vcat(result[1],q[1],q[2],q[3],result[2],q[4])), xlabel = "time", ylabel = "expression", title = "first design", legend = false) # plot solution # plot solution
 
 loss_1, frequancy = loss_auto_paritally_obs(result,q)
@@ -101,7 +101,7 @@ plot(xs, ys)
 
 
 model_state = Flux.state(model)
-jldsave("mymodel.jld2"; model_state)
+jldsave("mymodel2.jld2"; model_state)
 
 # Load the model
 #model_state = JLD2.load("mymodel.jld2", "model_state");

@@ -125,10 +125,10 @@ for i = 1:100
     q = rand(4).*0.3 .+ 0.5
 
     state = zeros(num_design_params + response_length)
-    result = model_one_step(state)
+    # result = model_one_step(state)
 
-    loss_1, frequancy = loss_auto_paritally_obs(result,q)
-    design_losses_single_step[i] = loss_1
+    # loss_1, frequancy = loss_auto_paritally_obs(result,q)
+    # design_losses_single_step[i] = loss_1
 
     result = model(state)
     
@@ -189,9 +189,31 @@ end
 
 
 
-plot([-design1_losses], xlabel = "trial", ylabel = "reward", label = "first design") # plot progress
+plot(-design1_losses, xlabel = "trial", ylabel = "reward", label = "first design") # plot progress
 plot!(-design2_losses, xlabel = "trial", ylabel = "reward", label = "second design") # plot progress
 
+using Plots
+
+# Sort the order in the circle by the second design
+sorted_indices = sortperm(-design1_losses)
+
+# Apply the sorted indices to both designs
+sorted_design1_losses = design1_losses[sorted_indices]
+sorted_design2_losses = design2_losses[sorted_indices]
+
+# Create an array of angles from 0 to 2π
+angles = range(0, stop=2π, length=length(sorted_design1_losses))
+
+# Create the polar plot
+logs = log.(design1_losses .+ 0.0001)
+logs2 = log.(design2_losses .+ 0.0001)
+
+minimum(logs)
+minimum(logs2)
+
+
+plot(-angles,  logs, xlabel = "trial", ylabel = "reward", label = "first design", proj = :polar) # plot progress
+plot!(-angles,  logs2, xlabel = "trial", ylabel = "reward", label = "second design", proj = :polar) # plot progress
 # Histograms
 violin(-design1_losses, label = "first design") # plot progress
 violin!(-design2_losses, label = "second design", xlabel = "", ylabel = "reward") # plot progress
@@ -202,8 +224,8 @@ plot(xs, ys)
 
 
 
-model_state = Flux.state(model)
-jldsave("mymodel4.jld2"; model_state)
+# model_state = Flux.state(model)
+# jldsave("mymodel4.jld2"; model_state)
 
 # Load the model
 model_state = JLD2.load("mymodel4.jld2", "model_state");
