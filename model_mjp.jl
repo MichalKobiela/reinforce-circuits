@@ -87,7 +87,7 @@ function freq(acf)
             return float(i/1000)
         end
     end
-    return -10
+    return 0
 end
 
 # Reward = - loss_auto

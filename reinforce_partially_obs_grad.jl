@@ -59,7 +59,7 @@ end
 opt_state = Flux.setup(Descent(0.01), model)
 
 #Reinforce
-Random.seed!(0)
+Random.seed!(3)
 
 model = Chain(
   Dense((num_design_params + response_length) * history_length => 32, relu), 
@@ -69,6 +69,7 @@ model = Chain(
   sigmoid)
 
 loss_vec = zeros(5000)
+
 for i in tqdm(1:5000)
     unobserved_state = rand(4).*0.2 .+ 0.5
     initial_state = zeros(num_design_params + response_length)
@@ -80,20 +81,22 @@ for i in tqdm(1:5000)
     end
 
     xs = sample_policy(state, model)
-    loss_vec[i] = loss_1 + loss_auto_paritally_obs(xs,unobserved_state)[1]
+
+    loss_2 = loss_auto_paritally_obs(xs,unobserved_state)[1]
+    loss_vec[i] = loss_1 + 0.9*loss_2
     
-    if loss_1 > 0.05
-        loss_1 = 0.05
-    end
+    # if loss_2 > 0.05
+    #     loss_2 = 0.05
+    # end
+
+    # if loss_vec[i] > 0.05
+    #     loss_vec[i] = 0.05
+    # end
     
-    ∇model= Flux.gradient(model -> score(initial_xs, model, initial_state) * loss_1, model)[1]
+    ∇model= Flux.gradient(model -> score(initial_xs, model, initial_state) * loss_vec[i], model)[1]
     Flux.update!(opt_state, model, ∇model)
 
-    if loss_vec[i] > 0.05
-        loss_vec[i] = 0.05
-    end
-
-    ∇model= Flux.gradient(model -> score(xs, model, state) * loss_vec[i], model)[1]
+    ∇model= Flux.gradient(model -> score(xs, model, state) * loss_2, model)[1]
     Flux.update!(opt_state, model, ∇model)
 end
 
@@ -205,11 +208,6 @@ sorted_design2_losses = design2_losses[sorted_indices]
 angles = range(0, stop=2π, length=length(sorted_design1_losses))
 
 # Create the polar plot
-logs = log.(design1_losses .+ 0.0001)
-logs2 = log.(design2_losses .+ 0.0001)
-
-minimum(logs)
-minimum(logs2)
 
 
 plot(-angles,  logs, xlabel = "trial", ylabel = "reward", label = "first design", proj = :polar) # plot progress
